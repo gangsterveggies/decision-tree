@@ -36,24 +36,27 @@ class DecisionTree:
 
       next_att = sorted(score_list, key=lambda x: x[1])[-1][0]
       current_node.chosen = next_att
-      dis_sets = [[] for i in range(len(self.data.attribute_pos[next_att]))]
-
-      for item in current_node.current_set:
-        dis_sets[self.data.instance_list[item][next_att]].append(item)
+      if self.data.attribute_type[next_att] == 0:
+        dis_sets = self.separate(current_node.current_set, next_att)
+      else:
+        dis_sets, value = self.separate(current_node.current_set, next_att)
 
       nlist = list(current_node.current_attributes)
       nlist.remove(next_att)
       for i in range(len(dis_sets)):
         nnode = DecisionNode(nlist, dis_sets[i])
         nnode.parent = current_node
-        current_node.children.append((nnode, i))
+        if self.data.attribute_type[next_att] == 0:
+          current_node.children.append((nnode, i))
+        else:
+          current_node.children.append((nnode, value))
         self.processNode(nnode)
 
   def calculateScore(self, att, node):
-    dis_sets = [[] for i in range(len(self.data.attribute_pos[att]))]
-
-    for item in node.current_set:
-      dis_sets[self.data.instance_list[item][att]].append(item)
+    if self.data.attribute_type[att] == 0:
+      dis_sets = self.separate(node.current_set, att)
+    else:
+      dis_sets,_ = self.separate(node.current_set, att)
 
     return self.calculateEntr(node.current_set) - sum([len(dis_sets[i]) * self.calculateEntr(dis_sets[i]) / len(node.current_set) for i in range(len(dis_sets))])
 
@@ -61,7 +64,7 @@ class DecisionTree:
     if len(ilist) == 0:
       return 0
 
-    count_array = [0, 0]
+    count_array = [0 for i in range(len(self.data.classification_list))]
 
     for item in ilist:
       count_array[self.data.classification_list[item]] += 1
@@ -70,7 +73,7 @@ class DecisionTree:
     return -sum([count_array[i] / total * math.log(count_array[i] / total, 2) for i in range(2) if count_array[i] > 0])
 
   def calculateMajority(self, node):
-    count_array = [0, 0]
+    count_array = [0 for i in range(len(self.data.classification_list))]
 
     for item in node.current_set:
       count_array[self.data.classification_list[item]] += 1
@@ -91,19 +94,63 @@ class DecisionTree:
         indent += 1
 
       print " " * indent + self.data.attribute_names[node.chosen] + ":"
+
+      symbol = "<="
       for child in node.children:
-        self.printNode(child[0], indent + 1, self.data.attribute_pos[node.chosen][child[1]])
+        if self.data.attribute_type[node.chosen] == 0:
+          self.printNode(child[0], indent + 1, self.data.attribute_pos[node.chosen][child[1]])
+        else:
+          self.printNode(child[0], indent + 1, symbol + str(child[1]))
+          symbol = ">"
 
   def classify(self, raw_instance):
     instance = [-1 for j in range(self.data.n_attributes)]
     for item in raw_instance:
-      instance[self.data.attribute_dict[item[1]]] = self.data.attribute_pos_dict[self.data.attribute_dict[item[1]]][item[0]]
+      if self.data.attribute_type[self.data.attribute_dict[item[1]]] == 0:
+        instance[self.data.attribute_dict[item[1]]] = self.data.attribute_pos_dict[self.data.attribute_dict[item[1]]][item[0]]
+      else:
+        instance[self.data.attribute_dict[item[1]]] = float(item[0])
 
     return self.data.classification_names[self.searchNode(instance, self.root)]
 
   def searchNode(self, instance, node):
     if node.leaf:
       return node.category
+
+    order = True
     for ch in node.children:
-      if instance[node.chosen] == ch[1]:
-        return self.searchNode(instance, ch[0])
+      if self.data.attribute_type[node.chosen] == 0:      
+        if instance[node.chosen] == ch[1]:
+          return self.searchNode(instance, ch[0])
+      else:
+        if (instance[node.chosen] <= ch[1] and order) or (instance[node.chosen] > ch[1] and not(order)):
+          return self.searchNode(instance, ch[0])
+        order = False
+
+  def separate(self, ilist, att):
+    if self.data.attribute_type[att] == 0:
+      dis_sets = [[] for i in range(len(self.data.attribute_pos[att]))]
+
+      for item in ilist:
+        dis_sets[self.data.instance_list[item][att]].append(item)
+
+      return dis_sets
+    else:
+      dis_sets = [[], []]
+      tmp_sets = [[], []]
+      best_gain = -100000
+      value = -1
+      list_pos = sorted([self.data.instance_list[item][att] for item in ilist])
+
+      for p in list_pos:
+        tmp_sets[0] = [item for item in ilist if self.data.instance_list[item][att] <= p]
+        tmp_sets[1] = [item for item in ilist if self.data.instance_list[item][att] > p]
+        current_gain = self.calculateEntr(ilist) - sum([len(tmp_sets[i]) * self.calculateEntr(tmp_sets[i]) / len(ilist) for i in range(2)])
+
+        if current_gain > best_gain:
+          best_gain = current_gain
+          value = p
+          dis_sets = [list(tmp_sets[0]), list(tmp_sets[1])]
+
+      return dis_sets, value
+        
