@@ -18,22 +18,14 @@ if __name__ == "__main__":
     except EOFError:
       break
 
-  att_vals = [[] for i in attributes]
-
-  for inst in instances:
-    for vl in inst:
-      att_vals[attributes.index(vl[1])].append(vl[0])
-
-  for i in range(len(att_vals)):
-    att_vals[i] = list(set(att_vals[i]))
-
-  data = DecisionData(attributes, att_vals, instances, classes, list(set(classes)))
-  dt = DecisionTree()
+  data = DecisionData(attributes, instances, classes)
+  dt = DecisionTree(advanced_score=True)
   dt.trainData(data)
   dt.printTree()
 
   for i in range(len(instances)):
-    print dt.classify(instances[i]), classes[i]
+    if dt.classify(instances[i]) != classes[i]:
+      print dt.classify(instances[i]), classes[i]
 
 """
   with open('decisionTree.pickle', 'wb') as f:

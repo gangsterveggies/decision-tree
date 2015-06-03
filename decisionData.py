@@ -1,5 +1,16 @@
 class DecisionData:
-  def __init__(self, raw_attributes, raw_attributes_spec, raw_data, raw_classification, raw_classification_spec):
+  def __init__(self, raw_attributes, raw_data, raw_classification):
+    raw_attributes_spec = [[] for i in raw_attributes]
+
+    for inst in raw_data:
+      for vl in inst:
+        raw_attributes_spec[raw_attributes.index(vl[1])].append(vl[0])
+
+    for i in range(len(raw_attributes_spec)):
+      raw_attributes_spec[i] = list(set(raw_attributes_spec[i]))
+
+    raw_classification_spec = list(set(raw_classification))
+
     self.n_attributes = len(raw_attributes)
     self.attribute_list = range(self.n_attributes)
     self.attribute_names = raw_attributes

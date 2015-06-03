@@ -3,9 +3,13 @@ from decisionNode import *
 from decisionData import *
 
 class DecisionTree:
-  def __init__(self):
+  def __init__(self, advanced_score=False):
     self.root = None
     self.data = None
+    if advanced_score:
+      self.scoreFunction = self.scoreFunction2
+    else:
+      self.scoreFunction = self.scoreFunction1
 
   def trainData(self, data):
     self.data = data
@@ -58,7 +62,16 @@ class DecisionTree:
     else:
       dis_sets,_ = self.separate(node.current_set, att)
 
-    return self.calculateEntr(node.current_set) - sum([len(dis_sets[i]) * self.calculateEntr(dis_sets[i]) / len(node.current_set) for i in range(len(dis_sets))])
+    return self.scoreFunction(node.current_set, dis_sets)
+
+  def scoreFunction1(self, total, dis):
+    return self.calculateEntr(total) - sum([len(dis[i]) * self.calculateEntr(dis[i]) / len(total) for i in range(len(dis))])
+
+  def scoreFunction2(self, total, dis):
+    vl = (- sum([float(len(item)) * math.log(float(len(item)) / len(total), 2) / len(total) for item in dis if len(item) > 0]))
+    if vl == 0.0:
+      vl = 0.0001
+    return self.calculateEntr(total) - sum([len(dis[i]) * self.calculateEntr(dis[i]) / len(total) for i in range(len(dis))]) / vl
 
   def calculateEntr(self, ilist):
     if len(ilist) == 0:
@@ -145,7 +158,7 @@ class DecisionTree:
       for p in list_pos:
         tmp_sets[0] = [item for item in ilist if self.data.instance_list[item][att] <= p]
         tmp_sets[1] = [item for item in ilist if self.data.instance_list[item][att] > p]
-        current_gain = self.calculateEntr(ilist) - sum([len(tmp_sets[i]) * self.calculateEntr(tmp_sets[i]) / len(ilist) for i in range(2)])
+        current_gain = self.scoreFunction(ilist, tmp_sets)
 
         if current_gain > best_gain:
           best_gain = current_gain
