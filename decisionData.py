@@ -7,7 +7,7 @@ class DecisionData:
         raw_attributes_spec[raw_attributes.index(vl[1])].append(vl[0])
 
     for i in range(len(raw_attributes_spec)):
-      raw_attributes_spec[i] = list(set(raw_attributes_spec[i]))
+      raw_attributes_spec[i] = sorted(list(set(raw_attributes_spec[i])))
 
     raw_classification_spec = list(set(raw_classification))
 

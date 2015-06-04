@@ -1,4 +1,6 @@
 import math
+import networkx as nx
+import pygraphviz as pvg
 from decisionNode import *
 from decisionData import *
 
@@ -6,10 +8,7 @@ class DecisionTree:
   def __init__(self, advanced_score=False):
     self.root = None
     self.data = None
-    if advanced_score:
-      self.scoreFunction = self.scoreFunction2
-    else:
-      self.scoreFunction = self.scoreFunction1
+    self.score_function_var = advanced_score
 
   def trainData(self, data):
     self.data = data
@@ -64,6 +63,12 @@ class DecisionTree:
 
     return self.scoreFunction(node.current_set, dis_sets)
 
+  def scoreFunction(self, total, dis):
+    if self.score_function_var:
+      return self.scoreFunction1(total, dis)
+    else:
+      return self.scoreFunction2(total, dis)
+
   def scoreFunction1(self, total, dis):
     return self.calculateEntr(total) - sum([len(dis[i]) * self.calculateEntr(dis[i]) / len(total) for i in range(len(dis))])
 
@@ -94,27 +99,6 @@ class DecisionTree:
     if count_array[0] > count_array[1]:
       return 0
     return 1
-
-  def printTree(self):
-    self.printNode(self.root, 0, "")
-
-  def printNode(self, node, indent, prev_att):
-    if node.leaf:
-      print " " * indent + prev_att + ": " + self.data.classification_names[node.category] + "(" + str(len(node.current_set)) + ")"
-    else:
-      if len(prev_att) > 0:
-        print " " * indent + prev_att + ":"
-        indent += 1
-
-      print " " * indent + self.data.attribute_names[node.chosen] + ":"
-
-      symbol = "<="
-      for child in node.children:
-        if self.data.attribute_type[node.chosen] == 0:
-          self.printNode(child[0], indent + 1, self.data.attribute_pos[node.chosen][child[1]])
-        else:
-          self.printNode(child[0], indent + 1, symbol + str(child[1]))
-          symbol = ">"
 
   def classify(self, raw_instance):
     instance = [-1 for j in range(self.data.n_attributes)]
@@ -166,4 +150,74 @@ class DecisionTree:
           dis_sets = [list(tmp_sets[0]), list(tmp_sets[1])]
 
       return dis_sets, value
+
+  def printTree(self):
+    self.printNode(self.root, 0, "")
+
+  def printNode(self, node, indent, prev_att):
+    if node.leaf:
+      print " " * indent + prev_att + ": " + self.data.classification_names[node.category] + "(" + str(len(node.current_set)) + ")"
+    else:
+      if len(prev_att) > 0:
+        print " " * indent + prev_att + ":"
+        indent += 1
+
+      print " " * indent + self.data.attribute_names[node.chosen] + ":"
+
+      symbol = "<="
+      for child in node.children:
+        if self.data.attribute_type[node.chosen] == 0:
+          self.printNode(child[0], indent + 1, self.data.attribute_pos[node.chosen][child[1]])
+        else:
+          self.printNode(child[0], indent + 1, symbol + str(child[1]))
+          symbol = ">"
+
+  def dumpTree(self, node):
+    cindex = self.index
+    self.index += 1
+    self.G.add_node(cindex)
+    if node.leaf:
+      self.G.get_node(cindex).attr['label'] = self.data.classification_names[node.category] + '\n(' + str(len(node.current_set)) + ')'
+      self.G.get_node(cindex).attr['shape'] = 'circle'
+    else:
+      tmp = sorted([self.data.classification_list[item] for item in node.current_set])
+      count = 1
+      ss = []
+      for i in range(1, len(tmp)):
+        if tmp[i] == tmp[i - 1]:
+          count += 1
+        else:
+          ss.append(count)
+      ss.append(count)
+
+      self.G.get_node(cindex).attr['label'] = self.data.attribute_names[node.chosen] + '\nErr: ' + str(round(max(ss) / float(sum(ss)), 2))
+      if self.data.attribute_type[node.chosen] == 0:
+        self.G.get_node(cindex).attr['fillcolor']="#999999"
+      else:
+        self.G.get_node(cindex).attr['fillcolor']="#BBBBBB"
+
+    symbol = '<='
+    for ch in node.children:
+      nn = self.dumpTree(ch[0])
+      self.G.add_edge(cindex, nn)
+
+      if self.data.attribute_type[node.chosen] == 0:
+        self.G.get_edge(cindex, nn).attr['label'] = self.data.attribute_pos[node.chosen][ch[1]]
+      else:
+        self.G.get_edge(cindex, nn).attr['label'] = symbol + str(ch[1])
+        symbol = '>'
         
+    return cindex
+        
+  def drawTree(self, sfile="tmp.png"):
+    self.G = pvg.AGraph(nodesep=1.2, bgcolor="transparent", splines=False, dpi=140)
+    self.G.node_attr['shape'] = 'rectangle'
+    self.G.node_attr['fixedsize'] = 'true'
+    self.G.node_attr['fontsize'] = '10'
+    self.G.node_attr['style'] = 'filled'
+    self.index = 0
+    self.dumpTree(self.root)
+    self.G.layout(prog='dot')
+    self.G.draw(sfile)
+    del self.index
+    del self.G
