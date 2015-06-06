@@ -28,7 +28,7 @@ def readData(filename):
     instances.append(a)
     classes.append(b)
 
-  return DecisionData(attributes, instances, classes)
+  return DecisionData(attributes, instances, classes), instances, classes
 
 if __name__ == "__main__":
   parser = OptionParser()
@@ -46,12 +46,16 @@ if __name__ == "__main__":
                     help="test instances from FILE", metavar="FILE")
   parser.add_option("-c", "--classify", dest="classify", default=False,
                     help="classify instance from standard input", action="store_true")
+  parser.add_option("-r", "--prune", dest="prune", default=False,
+                    help="turn on pruning on tree build", action="store_true")
+  parser.add_option("-e", "--error", dest="error", default=False,
+                    help="print percentage of misclassified train instances", action="store_true")
 
   (options, args) = parser.parse_args()
 
   if options.train:
-    data = readData(options.train)
-    dt = DecisionTree(advanced_score=True)
+    data, instances, classes = readData(options.train)
+    dt = DecisionTree(advanced_score=True, prune=options.prune)
     dt.trainData(data)
 
   if options.load:
@@ -98,3 +102,13 @@ if __name__ == "__main__":
       raise Exception, "The decision tree was not built"
 
     print dt.classify(readInstanceClass(raw_input(), dt.data.attribute_names))
+
+  if options.error and options.train:
+    correct = 0
+    for i in range(len(instances)):
+      if classes[i] == dt.classify(instances[i]):
+        correct += 1
+
+    print "Train report:"
+    print "Got %d of %d correct" % (correct, len(instances))
+    print "That's a %0.2f%% success percentage" % (round(100 * correct / float(len(instances)), 2))

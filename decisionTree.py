@@ -1,19 +1,39 @@
 import math
+import random
 import networkx as nx
 import pygraphviz as pvg
 from decisionNode import *
 from decisionData import *
 
 class DecisionTree:
-  def __init__(self, advanced_score=False):
+  def __init__(self, advanced_score=False, prune=True):
     self.root = None
     self.data = None
     self.score_function_var = advanced_score
+    self.prune_tree = prune
 
   def trainData(self, data):
     self.data = data
     self.root = DecisionNode(range(data.n_attributes), range(data.n_instances))
     self.processNode(self.root)
+    if self.prune_tree:
+      self.pruneNode(self.root)
+
+  def pruneNode(self, node):
+    if node.leaf:
+      return
+
+    child_error = 0
+    for ch in node.children:
+      child_error += len(ch[0].current_set) * self.calculateError(ch[0].current_set) / float(len(node.current_set))
+
+    if child_error <= self.calculateError(node.current_set):
+      node.leaf = True
+      node.category = self.calculateMajority(node)
+      node.children = None
+    else:
+      for ch in node.children:
+        self.pruneNode(ch[0])
 
   def processNode(self, current_node):
     categories_left = len(set([self.data.classification_list[item] for item in current_node.current_set]))
@@ -30,6 +50,7 @@ class DecisionTree:
     elif len(current_node.current_attributes) == 0:
       current_node.leaf = True
       current_node.category = self.calculateMajority(current_node)
+
     else:
       score_list = []
 
@@ -37,6 +58,7 @@ class DecisionTree:
         score = self.calculateScore(att, current_node)
         score_list.append((att, score))
 
+      random.shuffle(score_list)
       next_att = sorted(score_list, key=lambda x: x[1])[-1][0]
       current_node.chosen = next_att
       if self.data.attribute_type[next_att] == 0:
@@ -45,7 +67,8 @@ class DecisionTree:
         dis_sets, value = self.separate(current_node.current_set, next_att)
 
       nlist = list(current_node.current_attributes)
-      nlist.remove(next_att)
+      if self.data.attribute_type[next_att] == 0:
+        nlist.remove(next_att)
       for i in range(len(dis_sets)):
         nnode = DecisionNode(nlist, dis_sets[i])
         nnode.parent = current_node
@@ -151,6 +174,19 @@ class DecisionTree:
 
       return dis_sets, value
 
+  def calculateError(self, ilist):
+    tmp = sorted([self.data.classification_list[item] for item in ilist])
+    count = 1
+    ss = []
+    for i in range(1, len(tmp)):
+      if tmp[i] == tmp[i - 1]:
+        count += 1
+      else:
+        ss.append(count)
+    ss.append(count)
+
+    return max(ss) / float(sum(ss))
+
   def printTree(self):
     self.printNode(self.root, 0, "")
 
@@ -180,32 +216,22 @@ class DecisionTree:
       self.G.get_node(cindex).attr['label'] = self.data.classification_names[node.category] + '\n(' + str(len(node.current_set)) + ')'
       self.G.get_node(cindex).attr['shape'] = 'circle'
     else:
-      tmp = sorted([self.data.classification_list[item] for item in node.current_set])
-      count = 1
-      ss = []
-      for i in range(1, len(tmp)):
-        if tmp[i] == tmp[i - 1]:
-          count += 1
-        else:
-          ss.append(count)
-      ss.append(count)
-
-      self.G.get_node(cindex).attr['label'] = self.data.attribute_names[node.chosen] + '\nErr: ' + str(round(max(ss) / float(sum(ss)), 2))
+      self.G.get_node(cindex).attr['label'] = self.data.attribute_names[node.chosen] + '\nErr: ' + str(round(self.calculateError(node.current_set), 2))
       if self.data.attribute_type[node.chosen] == 0:
         self.G.get_node(cindex).attr['fillcolor']="#999999"
       else:
         self.G.get_node(cindex).attr['fillcolor']="#BBBBBB"
 
-    symbol = '<='
-    for ch in node.children:
-      nn = self.dumpTree(ch[0])
-      self.G.add_edge(cindex, nn)
+      symbol = '<='
+      for ch in node.children:
+        nn = self.dumpTree(ch[0])
+        self.G.add_edge(cindex, nn)
 
-      if self.data.attribute_type[node.chosen] == 0:
-        self.G.get_edge(cindex, nn).attr['label'] = self.data.attribute_pos[node.chosen][ch[1]]
-      else:
-        self.G.get_edge(cindex, nn).attr['label'] = symbol + str(ch[1])
-        symbol = '>'
+        if self.data.attribute_type[node.chosen] == 0:
+          self.G.get_edge(cindex, nn).attr['label'] = self.data.attribute_pos[node.chosen][ch[1]]
+        else:
+          self.G.get_edge(cindex, nn).attr['label'] = symbol + str(ch[1])
+          symbol = '>'
         
     return cindex
         

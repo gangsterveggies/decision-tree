@@ -1,0 +1,192 @@
+%----------------------------------------------------------------------------------------
+%	CONFIGURATIONS
+%----------------------------------------------------------------------------------------
+
+\documentclass[12pt,a4paper,oneside]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{natbib}
+\usepackage{amsmath}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[a4paper,left=2cm,right=2cm,top=2.5cm,bottom=2.5cm]{geometry}
+
+%----------------------------------------------------------------------------------------
+%	INFORMATION
+%----------------------------------------------------------------------------------------
+
+\title{Árvores de Decisão em Problemas de Classificação\\
+  \vspace{0.1in}
+  \large{Inteligência Artificial - Trabalho 4}
+}
+
+\author{Filipe Figueiredo\footnote{Filipe Figueiredo - 201203559},
+  Pedro Paredes\footnote{Pedro Paredes - 201205725} e Tiago
+  Castanheira\footnote{Tiago Castanheira - 201207833}, DCC - FCUP}
+
+\date{Junho 2015}
+
+\renewcommand{\tablename}{Tabela}
+\renewcommand{\figurename}{Figura}
+\renewcommand{\refname}{Referências}
+
+\begin{document}
+
+\maketitle
+
+%----------------------------------------------------------------------------------------
+%	SECTION 1
+%----------------------------------------------------------------------------------------
+
+\section{Introdução}
+\label{sec:intro}
+
+A área de aprendizagem de máquina é uma área cada vez mais estudada e
+usada em mais contextos. Além de ser uma abordagem com imenso
+potencial para diferentes tipos de problemas, permite soluções muito
+flexíveis. É por estas razões que cada vez mais é uma área muito
+explorada por grande empresas como \cite{google:2015}
+\cite{facebook:2015} e da qual dependem em vários dos seus produtos.
+
+Sendo a aprendizagem de máquina um tema tão global, é naturalmente
+dividido em vários subtemas que abordam diferentes tipos de
+problemas. É nestes subtemas que aparecem os problemas de
+classificação. Neste relatório exploramos este tipo de problemas,
+assim como uma técnica em concreto - árvores de decisão - para a sua
+solução, além de algumas das suas propriedades.
+
+O resto do relatório está organizado da seguinte forma. Na Secção
+\ref{sec:cla} introduzem-se problemas de classificação. Na Secção
+\ref{sec:alg} discutem-se algumas abordagens a problemas de
+classificação, em particular a das árvores de decisão. Na Secção
+\ref{sec:imp} descrevem-se os detalhes da implementação. Na Secção
+\ref{sec:res} apresentam-se os resultados obtidos para os conjuntos de
+dados fornecidos. Finalmente na Secção \ref{sec:con} fazem-se algumas
+notas finais.
+
+%----------------------------------------------------------------------------------------
+%	SECTION 2
+%----------------------------------------------------------------------------------------
+
+\section{Problemas de Classificação}
+\label{sec:cla}
+
+A classificação é um dos temas mais simples, mas também mais
+importantes da aprendizagem de máquina. É um tipo de aprendizagem
+supervisionada, pois necessita de instâncias já corretamente
+classificadas como \textit{input}.
+
+Resumindo o problema, é dado um conjunto de atributos, onde cada
+atributo pode ter um conjunto de valores diferentes. Estes valores
+podem ser discretos (atributos nominais) ou contínuos (atributos
+numerais). Adicionalmente, é dada uma instância destes atributos, ou
+seja, um vetor de valores correspondentes a cada atributo (como uma
+tabela) que pertence potencialmente a uma de um conjunto de classes. O
+objetivo do problema é identificar a classe pertence esta instância,
+sabendo as classes corretas para um conjunto de instâncias dado. Isto
+é, o objetivo é identificar a classe de uma observação dado um
+conjunto de observações para as quais se conhecem a classe correta.
+
+Um exemplo clássico de um problema deste tipo é o problema de
+classificar um \textit{email} como SPAM ou não SPAM. Neste problema em
+específico é comum aplicarem-se alguns conceitos de extração de
+informação além dos vários algoritmos conhecidos de
+classificação. Outro problema clássico é o problema de diagnostico
+médico. Dado um conjunto de sintomas ou dados sobre um paciente,
+classificar esse paciente como portador ou não de um certa
+doença. Claro que há muitos mais exemplos (alguns que serão referidos
+nas secções seguintes deste relatório).
+
+%----------------------------------------------------------------------------------------
+%	SECTION 3
+%----------------------------------------------------------------------------------------
+
+\section{Algoritmos para Classificação}
+\label{sec:alg}
+
+Há variadas abordagens para problemas de classificação, que se aplicam
+melhor dependendo do tipo de dados, do número de atributos, dos
+domínios dos valores, \ldots
+
+Um dos algoritmos mais simples, mas ao mesmo tempo muito poderoso é o
+\textit{Naive Bayes}. O seu funcionamento é baseado num uso
+inteligente do teorema de \textit{Bayes} assumindo ainda,
+\textit{naively}, que cada atributo é independente entre si. Isto dá
+origem a um algoritmo muito escalável por ser linear que consegue ser
+muito competitivo em certas áreas com algoritmos mais sofisticados. Um
+dos exemplos mais antigos de sucesso com este método é o problema de
+classificação de \textit{emails} como SPAM ou não SPAM. O algoritmo de
+classificação é extremamente simples, mas obtém resultados muito bons
+\cite{sahami:1998}.
+
+Outro método simples é o método da regressão logística.
+
+\subsection{Árvores de Decisão}
+
+\lipsum[0]
+
+\lipsum[1]
+
+\lipsum[2]
+
+\lipsum[3]
+
+\lipsum[4]
+
+\lipsum[5]
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 4
+%----------------------------------------------------------------------------------------
+
+\section{Implementação}
+\label{sec:imp}
+
+\lipsum[0]
+
+\lipsum[1]
+
+\lipsum[2]
+
+%----------------------------------------------------------------------------------------
+%	SECTION 5
+%----------------------------------------------------------------------------------------
+
+\section{Resultados}
+\label{sec:res}
+
+\lipsum[0]
+
+\lipsum[1]
+
+\lipsum[2]
+
+\lipsum[3]
+
+\lipsum[4]
+
+\lipsum[5]
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION 6
+%----------------------------------------------------------------------------------------
+
+\section{Conclusão}
+\label{sec:con}
+
+\lipsum[0]
+
+\lipsum[1]
+
+\lipsum[2]
+
+
+\bibliographystyle{plain}
+\bibliography{lab_report_4}
+
+\end{document}
