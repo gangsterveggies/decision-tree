@@ -58,7 +58,7 @@ class DecisionTree:
         score = self.calculateScore(att, current_node)
         score_list.append((att, score))
 
-      random.shuffle(score_list)
+      #random.shuffle(score_list)
       next_att = sorted(score_list, key=lambda x: x[1])[-1][0]
       current_node.chosen = next_att
       if self.data.attribute_type[next_att] == 0:

@@ -269,11 +269,57 @@ corrigi-lo).
 \section{Implementação}
 \label{sec:imp}
 
-\lipsum[0]
+Para testar as técnicas descritas anteriormente, foi implementada uma
+árvore de decisão na linguagem \texttt{Python}. O algoritmo
+implementado é muito parecido com o \texttt{C4.5}.
 
-\lipsum[1]
+A representação da estrutura é feita de maneira natural, representando
+a árvore de decisão como uma árvore com raiz. O código foi organizado
+de forma modular, de maneira a separar os dados a representar (ou
+seja, as instâncias de \textit{input}), os nós da árvore e a própria
+árvore.
 
-\lipsum[2]
+O código aceita como input \textit{datasets} como descritos no
+enunciado (é de notar que os \texttt{.csv} fornecidos tiveram que ser
+ligeiramente alterados para estarem no formato correto, devido a
+pequenas inconsistências). Para atributos discretos, o seu modo de
+funcionamento é exatamente o descrito na secção anterior. Para
+atributos contínuos, o código aplica o método descrito na secção
+anterior ao dividir a lista de instâncias cada nó em todos os
+elementos possíveis de uma forma quadrática. É possível fazer este
+passo com uma complexidade melhor \cite{quinlan:1996}, mas por
+simplicidade apenas foi implementado o método quadrático. Outro
+pormenor importante sobre como o código lida com atributos contínuos é
+que quando um nó usa um atributo contínuo, esse atributo não é apagado
+da lista de atributos disponíveis e pode ser usado novamente por um nó
+filho (com uma divisão diferente). Observando as árvores de decisão
+geradas há aparentemente um aumento do sobre ajustamento, mas testes
+efetuados indicaram o contrário para os \textit{datasets} do
+enunciado, por isso decidimos usar este método.
+
+Como métrica usada foram implementadas a métrica de entropia e a
+métrica de entropia com separação de resultados, descritas na secção
+anterior, mas como ambas deram os mesmos resultados para todos os
+conjuntos de dados, apenas a métrica simples de entropia ficou
+ativa. Para diminuir o sobre ajustamento, o código permite fazer um
+\textit{pruning} da árvore gerada usando o método descrito na secção
+anterior.
+
+Adicionalmente o código permite escrever a árvore no formato pedido no
+enunciado e ainda desenhá-la para um ficheiro qualquer de formato de
+imagem (seja \texttt{.png}, \texttt{.jpg}, \ldots). É de notar que
+para atributos com nomes compridos o código imprime alguns aviso ao
+desenhar a árvore, mas simplesmente indicam que os textos ficaram
+demasiado grandes para os \textit{containers} na imagem e devem ser
+ignorados. É também possível serializar a árvore gerada para um
+ficheiro (com extensão recomendada de \texttt{.dt}) para ser usada
+para diferentes \textit{inputs} (pois é também possível carregar uma
+árvore já gerada).
+
+Infelizmente, o código não suporta instâncias com atributos em falta
+(como o \texttt{C4.5} permite). Apesar de ser facilmente implementável
+ao ignorar estas instâncias no cálculo de entropias relativas ao
+atributo que têm em falta, por falta de tempo não foi implementado.
 
 %----------------------------------------------------------------------------------------
 %	SECTION 5
@@ -282,11 +328,53 @@ corrigi-lo).
 \section{Resultados}
 \label{sec:res}
 
-\lipsum[0]
+A implementação foi testada numa máquina de Linux com um Intel M
+(0.8GHz) de 2 cores e 4GB de memória. Foram usados como dados de teste
+os \textit{datasets} dados no enunciado. Referimo-nos assim como o
+\texttt{D1} ao \texttt{restaurant.csv}, \texttt{D2} ao
+\texttt{weather.csv} e \texttt{D3} ao \texttt{iris.csv}. Visto que o
+número de instâncias presentes no \texttt{D1} e no \texttt{D2} é muito
+pequeno, apenas apresentamos as árvores de decisão geradas usando o
+conjunto completo como \textit{training set} e a percentagem de erro
+obtida no \textit{training set}. Para o \texttt{D3} o conjunto foi
+dividido em dois usando o princípio de Pareto, num conjunto de treino
+e um de teste (não foi usado um conjunto de validação pois não temos
+parâmetros a variar na implementação).
 
-\lipsum[1]
+Na Figura \ref{fig:anp} apresentamos as três árvores de decisão
+geradas para os três conjuntos de \textit{input}, sem usar
+\textit{pruning}. O formato da imagem é semelhante ao formato escrito
+definido no enunciado, ou seja os valores entre parêntesis indicam o
+número de instâncias do conjunto de treino que foram classificadas na
+folha correspondente e o valor \texttt{Err} indica o erro de
+classificação do nó em questão usando a métrica definida na secção
+anterior.
 
-\lipsum[2]
+\begin{figure}[!htb]
+  \centering
+  \begin{subfigure}[b]{0.90\textwidth}
+    \centering
+    \includegraphics[scale=0.2]{arv1}
+    \caption{A árvore para o \texttt{D1}}
+    \label{fig:ad1}
+  \end{subfigure}
+  
+  \begin{subfigure}[b]{0.90\textwidth}
+    \centering
+    \includegraphics[scale=0.3]{arv2}
+    \caption{A árvore para o \texttt{D2}}
+    \label{fig:ad2}
+  \end{subfigure}
+
+  \begin{subfigure}[b]{0.90\textwidth}
+    \centering
+    \includegraphics[scale=0.2]{arv3}
+    \caption{A árvore para o \texttt{D3}}
+    \label{fig:ad3}
+  \end{subfigure}
+  \caption{Árvores de decisão sem \textit{pruning}}
+  \label{fig:anp}
+\end{figure}
 
 \lipsum[3]
 
@@ -301,6 +389,9 @@ corrigi-lo).
 
 \section{Conclusão}
 \label{sec:con}
+
+% Falar de outros métodos como boosting, MCMC... como melhorar a nossa
+% implementacao: introduzir random, ir buscar a melhor...
 
 \lipsum[0]
 
