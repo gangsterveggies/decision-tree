@@ -122,22 +122,145 @@ classificação de \textit{emails} como SPAM ou não SPAM. O algoritmo de
 classificação é extremamente simples, mas obtém resultados muito bons
 \cite{sahami:1998}.
 
-Outro método simples é o método da regressão logística.
+Outro método simples é o método da regressão logística. Este método
+baseia-se em modelar o espaço da classificação das observações através
+de uma função logística. Para se obter a posição de uma instância a
+classificar, é utilizada uma função linear, cujos parâmetros são
+obtidos utilizando métodos de regressão linear \cite{cox:1958}.
+
+Existem muitos outros métodos mais sofisticados como redes neuronais,
+máquinas de vetores de suporte \ldots que são utilizados para
+problemas de classificação.
 
 \subsection{Árvores de Decisão}
 
-\lipsum[0]
+Um outro método simples e muito conhecido é o das árvores de
+decisão. Este método consiste em construir uma árvore (com raiz) que
+classifica uma instância seguindo um caminho na árvore que seja
+representativo dos seus valores para cada atributo. Concretamente,
+cada nó da árvore representa uma classe (caso seja uma folha) ou um
+atributo (caso seja um nó interno). Cada aresta representa um valor
+possível do atributo do nó pai, havendo exatamente uma aresta que liga
+o nó pai a algum nó por cada valor possível. O caminho escolhido para
+cada instância segue os valores possíveis correspondentes em cada
+aresta até chegar a uma folha, sendo considerada a classe dessa folha
+como a classe da instância.
 
-\lipsum[1]
+Para construir uma árvore de decisão é usado um conjunto de
+observações já classificadas das quais se pretende obter uma árvore
+que as represente fielmente. Neste sentido, o objetivo é que o máximo
+de instâncias do conjunto de treino sejam classificadas pela árvore de
+decisão com a mesma classe que a correta.
 
-\lipsum[2]
+Este método tem várias vantagens. Primeiro, a representação obtida é
+muito natural e consegue-se facilmente interpretada por um
+humano. Adicionalmente, é possível obter representações muito
+compactas de uma árvore, o que leva a poucos gastos de
+memória. Finalmente, após ter uma árvore construída, o processo de
+classificação é um processo de complexidade temporal linear na altura
+da árvore, sendo que a altura é no máximo proporcional ao número de
+atributo, a classificação é muito eficiente.
 
-\lipsum[3]
+Infelizmente, o problema de construir uma árvore de decisão ótima (a
+definição de otimalidade neste contexto é relativa, mas pode ser
+definida formalmente) é NP-Completo \cite{hyafil:1976}. Assim, os
+algoritmos mais comuns (e mais simples) para construção de árvores de
+decisão são algoritmos \textit{greedy}. A ideia base é construir a
+árvore de cima para baixo. Começando pela raiz, considera-se o
+conjunto de instâncias de \textit{input} completo e o conjunto de
+todos os atributos. Para cada nó escolhe-se um atributo do conjunto de
+atributos ainda disponíveis de maneira a separar o conjunto de
+instâncias de \textit{input} seguindo os valores do atributo escolhido
+correspondente. Cria-se assim um nó por cada valor possível do
+atributo (com ligação para o nó em questão), dividem-se as instâncias
+de \textit{input} por cada nó e retira-se o atributo escolhido da
+lista de atributos disponíveis. Isto é feito recursivamente até que o
+nó em questão apenas tenha instâncias de uma só classe, onde se toma
+essa classe como a classe da folha, se já não houver atributos
+disponíveis, onde se usa a classe com mais elementos no nó como a
+classe da folha, ou já não houver instâncias de \textit{input}, onde
+se usa a classe com mais elementos do nó pai como classe da folha.
 
-\lipsum[4]
+É de notar que este não é o único método de gerar árvores de
+decisão. Existem outros métodos com bases alternativas em conceitos de
+estatística, por exemplo \cite{chipman:1998}.
 
-\lipsum[5]
+Apesar de o algoritmo descrito anteriormente aparentar ser bastante
+promissor, falta-lhe um pormenor importante, que é o de como decidir
+que atributo escolher em cada nó. Existem diferentes métricas para
+escolher a melhor separação. Indicamos 3 diferentes nos parágrafos
+seguintes.
 
+\begin{itemize}
+\item \textbf{gini}: mede qual é a probabilidade de um elemento
+  retirado aleatoriamente do conjunto de elementos do nó a considerar
+  seria incorretamente classificado se for usada a distribuição desse
+  nó. Pode ser formulada da seguinte forma: $I_g(t) = 1 - \sum_i{p(i
+    \mid t)}$ para todas as classes possíveis, dado um nó $t$
+\item \textbf{entropia}: usa o conceito de entropia conhecido da
+  teoria da informação, que define a quantidade de informação contida
+  numa distribuição. É definida com uma fórmula de ganho de informação
+  que pode ser descrita da seguinte forma: $I_e(t) = -\sum_i{p(i \mid
+    t) \log_2{p(i \mid t)}}$ para todas as classes possíveis, dado um
+  nó $t$.
+\item \textbf{erro de classificação}: mede o erro da classificação dos
+  elementos no nó atual. Pode ser formulada da seguinte forma: $I_c(t)
+  = 1 - \max_i{(p(i \mid t))}$ para todas as classes possíveis, dado
+  um nó $t$.
+\end{itemize}
+
+Para escolher um atributo, escolhe-se o atributo que leva a maior
+ganho de informação segundo a métrica escolhida. O ganho de informação
+segundo uma métrica é definido como: $\Delta = I(P) -
+\sum_i{\frac{N(v_i)}{N(P)} I(v_i)}$, onde $P$ é o nó pai, $N(g)$ é o
+número de elementos do nó $g$, $v_i$ é o $i$-ésimo filho do nó $P$ e
+$I(v)$ é a métrica a usar. Escolhe-se então o atributo que maximiza
+$\Delta$.
+
+A métrica \textit{gini} é conhecida por ser usada no algoritmo
+\texttt{CART}, um dos primeiros algoritmos a surgir na área
+\cite{tien:1985}. Já a métrica de entropia é conhecida por ser a
+escolhida pelo algoritmo \texttt{ID3}, que foi desenvolvida
+contemporaneamente ao algoritmo \texttt{CART}, mas é um dos algoritmos
+mais comuns e conhecidos da área \cite{quinlan:1986}.
+
+O algoritmo \texttt{ID3} está completamente descrito nos parágrafos
+iniciais desta secção, sendo a escolha de atributo feita usando a
+métrica de entropia. Infelizmente, este algoritmo não lida muito bem
+com atributos que permitam valores contínuos ou numéricos. Assim, foi
+introduzido o algoritmo \texttt{C4.5}, que inclui como uma das suas
+contribuições um método para lidar com atributos deste tipo. A ideia
+para suportar atributos contínuos é de tentar dividir o conjunto de
+instâncias em dois, onde todos os elementos do primeiro são menores ou
+iguais a um certo valor e os do segundo são maiores que o mesmo
+valor. Como valores possíveis usam-se os vários valores das instâncias
+de treino. Escolhe-se como o ganho de entropia deste atributo como o
+ganho de entropia obtido pela divisão dos elementos com maior ganho de
+entropia.
+
+Apesar de os métodos descritos terem bastante sucesso com vários
+problemas, têm algumas desvantagens. Uma desvantagem do \texttt{ID3} e
+do \texttt{C4.5} é o facto de que a métrica de entropia tende a
+preferir atributos com mais valores possíveis. É possível atenuar este
+efeito usando a noção de razão de ganho de informação, que consiste em
+introduzir um termo a dividir na fórmula do $\Delta$ que representa a
+separação dos resultados, que é definido como $S_i =
+-\sum_i{\frac{N(v_i)}{N(P)} \log_2{\frac{N(v_i)}{N(P)}}}$, onde $N(v)$
+está definido como anteriormente. Outra desvantagem importante é que
+além de os algoritmos serem \textit{greedy} por natureza, tendem a
+sobre ajustar os dados (conhecido como ``overfitting''), gerando
+árvores complexas com grande divisão das instâncias de treino. Uma
+maneira de diminuir este efeito foi introduzida no algoritmo
+\texttt{C4.5} é usar \textit{pruning}, ou seja, percorrer a árvore de
+cima para baixo, apagando uma sub-árvore completa caso o erro de
+classificação desse nó seja menor ou igual ao erro de classificação
+médio dos filhos (usando a métrica a cima), onde a sub-árvore é
+substituída por uma folha cuja classe é a da classe mais comum entre
+as instâncias desse nó. Finalmente, uma desvantagem que será abordada
+em mais detalhe na próxima secção, é o facto de que estes algoritmos
+não funcionam muito bem com problemas com um grande número de
+atributos (damos um exemplo na Secção \ref{sec:imp} e como
+corrigi-lo).
 
 %----------------------------------------------------------------------------------------
 %	SECTION 4
